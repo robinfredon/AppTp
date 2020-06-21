@@ -185,9 +185,9 @@ namespace AppTP
     {
       System.Timers.Timer Timer1 = new System.Timers.Timer();
       Timer1.Start();
-      Timer1.Interval = 1000;
+      Timer1.Interval = 500;
       Timer1.Enabled = true;
-      //Timer1.AutoReset = true;
+      Timer1.AutoReset = true;
       Timer1.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
       {
         RunOnUiThread(() =>
@@ -201,8 +201,8 @@ namespace AppTP
           accViewZ.Text = "Z: " + AccelerometerReader.accZ.ToString();*/
           //AccelerometerReader.ToggleAccelerometer();
 
-          /*GyroscopeReader.isLaunchedG = false;
-          GyroscopeReader.ToggleGyroscope();*/
+          GyroscopeReader.isLaunchedG = false;
+          GyroscopeReader.ToggleGyroscope();
           /*gyrViewX.Text = "G X: " + GyroscopeReader.accX.ToString();
           gyrViewY.Text = "G Y: " + GyroscopeReader.accY.ToString();
           gyrViewZ.Text = "G Z: " + GyroscopeReader.accZ.ToString();*/

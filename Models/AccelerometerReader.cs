@@ -19,7 +19,6 @@ namespace AppTP.Models
   {
     // Set speed  delay for monitoring changes.
     static SensorSpeed speed = SensorSpeed.UI;
-    // COORD
     public static decimal accX = 0.0m;
     public static decimal accY = 0.0m;
     public static decimal accZ = 0.0m;
@@ -29,11 +28,9 @@ namespace AppTP.Models
     public static decimal deltaaccX;
     public static decimal deltaaccY;
     public static decimal deltaaccZ;
-    // BOOL
     public static bool isLaunchedA = false;
     public static bool isStartedA = false;
     public static bool isHoldA = false;
-    // CONST
     private const int nbrDeciDebug = 4;
     private const int nbrDeci = 2;
     private const int limitBreakMove = 30;
@@ -44,7 +41,6 @@ namespace AppTP.Models
       Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
     }
 
-    // Handler
     void Accelerometer_ReadingChanged(object sender, AccelerometerChangedEventArgs e)
     {
       if (!isLaunchedA)
@@ -59,9 +55,9 @@ namespace AppTP.Models
         accY = Convert(data.Acceleration.Y);
         accZ = Convert(data.Acceleration.Z);
 
-        /*computeDelta();
+        computeDelta();
 
-        CheckMoving();*/
+        CheckMoving();
 
         // Log
         Log.Debug("Dev_Data_Accelerometer", $"Reading Accelerometer: X: {data.Acceleration.X }, Y: {data.Acceleration.Y }, Z: {data.Acceleration.Z}");
@@ -102,7 +98,6 @@ namespace AppTP.Models
       Log.Debug("Dev_Move_Accelerometer", $"Deltas = {deltas}");
     }
 
-    // Toggle 
     public static void ToggleAccelerometer()
     {
       try

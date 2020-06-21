@@ -103,8 +103,7 @@ namespace AppTP.Models
       Log.Debug("Dev_Move_Gyroscope", $"isHoldG = {isHoldG}");
       Log.Debug("Dev_Move_Gyroscope", $"Deltas = {deltas}");
     }
-
-    // Toggle 
+ 
     public static void ToggleGyroscope()
     {
       try
