@@ -88,6 +88,7 @@ namespace AppTP
       startTimer();
     }
 
+    // Init after a Voice change
     private void initVoice()
     {
       nbChoc = 0;
@@ -140,6 +141,7 @@ namespace AppTP
       }
     }
 
+    // Timer for the data reading
     public void startTimer()
     {
       System.Timers.Timer Timer1 = new System.Timers.Timer();
@@ -151,19 +153,21 @@ namespace AppTP
       {
         RunOnUiThread(() =>
         {
-          Log.Debug("App_Dev", "RunOnUiThread()");
+          Log.Debug("Dev_App", "RunOnUiThread()");
 
+          AccelerometerReader.isStartedA = false;
           AccelerometerReader.ToggleAccelerometer();
           /*accViewX.Text = "X: " + AccelerometerReader.accX.ToString();
           accViewY.Text = "Y: " + AccelerometerReader.accY.ToString();
-          accViewZ.Text = "Z: " + AccelerometerReader.accZ.ToString();
-          //AccelerometerReader.ToggleAccelerometer();*/
+          accViewZ.Text = "Z: " + AccelerometerReader.accZ.ToString();*/
+          //AccelerometerReader.ToggleAccelerometer();
 
+          GyroscopeReader.isStartedG = false;
           GyroscopeReader.ToggleGyroscope();
           /*gyrViewX.Text = "G X: " + GyroscopeReader.accX.ToString();
           gyrViewY.Text = "G Y: " + GyroscopeReader.accY.ToString();
-          gyrViewZ.Text = "G Z: " + GyroscopeReader.accZ.ToString();
-          //GyroscopeReader.ToggleGyroscope();*/
+          gyrViewZ.Text = "G Z: " + GyroscopeReader.accZ.ToString();*/
+          //GyroscopeReader.ToggleGyroscope();
 
           studyMove();
         });
@@ -175,9 +179,12 @@ namespace AppTP
       // Start
       if (!isStarted)
       {
-        if(AccelerometerReader.accX != AccelerometerReader.oldaccX && AccelerometerReader.accY != AccelerometerReader.oldaccY)
+        if(AccelerometerReader.isHold && AccelerometerReader.accX == 0 && AccelerometerReader.accY == 0)
         {
-          //null
+          mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
+          mediaPlayer.Start();
+          isStarted = true;
+          Log.Debug("Dev_Voice", "Play Start Voice");
         }
       }
     }

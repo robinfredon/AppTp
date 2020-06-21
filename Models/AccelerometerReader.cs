@@ -10,6 +10,7 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using Java.Lang;
 using Xamarin.Essentials;
 
 namespace AppTP.Models
@@ -18,12 +19,16 @@ namespace AppTP.Models
   {
     // Set speed  delay for monitoring changes.
     static SensorSpeed speed = SensorSpeed.UI;
-    public static float accX = 0.0F;
-    public static float accY = 0.0F;
-    public static float accZ = 0.0F;
-    public static float oldaccX;
-    public static float oldaccY;
-    public static float oldaccZ;
+    public static decimal accX = 0.0m;
+    public static decimal accY = 0.0m;
+    public static decimal accZ = 0.0m;
+    public static decimal oldaccX;
+    public static decimal oldaccY;
+    public static decimal oldaccZ;
+    private const int nbrDeciDebug = 4;
+    private const int nbrDeci = 2;
+    public static bool isStartedA = false;
+    public static bool isHold = false;
 
     public AccelerometerReader()
     {
@@ -33,17 +38,51 @@ namespace AppTP.Models
 
     void Accelerometer_ReadingChanged(object sender, AccelerometerChangedEventArgs e)
     {
-      var data = e.Reading;
+      if (!isStartedA)
+      {
+        var data = e.Reading;
 
-      oldaccX = accX;
-      oldaccY = accY;
-      oldaccZ = accZ;
-      accX = data.Acceleration.X;
-      accY = data.Acceleration.Y;
-      accZ = data.Acceleration.Z;
+        // Process Acceleration X, Y, and Z
+        oldaccX = accX;
+        oldaccY = accY;
+        oldaccZ = accZ;
+        accX = Convert(data.Acceleration.X);
+        accY = Convert(data.Acceleration.Y);
+        accZ = Convert(data.Acceleration.Z);
 
-      Log.Debug("Dev_Accelerometer", $"Reading Accelerometer: X: {data.Acceleration.X }, Y: {data.Acceleration.Y }, Z:{data.Acceleration.Z}");
-      // Process Acceleration X, Y, and Z
+        CheckMoving();
+        // Log
+        Log.Debug("Dev_Accelerometer", $"Reading Accelerometer: X: {data.Acceleration.X }, Y: {data.Acceleration.Y }, Z: {data.Acceleration.Z}");
+        Log.Debug("Dev_Accelerometer", $"Round Accelerometer: X: {accX }, Y: {accY }, Z: {accZ}");
+
+        isStartedA = true;
+      }
+    }
+
+    private decimal Convert(float x)
+    {
+      if(isHold)
+      {
+        return Decimal.Round(new decimal(x), nbrDeci);
+      }
+      else
+      {
+        return Decimal.Truncate(new decimal(x));
+      }
+    }
+
+    private void CheckMoving()
+    {
+      if(oldaccX == accX && oldaccY == accY)
+      {
+        isHold = false;
+      }
+      else
+      {
+        isHold = true;
+      }
+
+      Log.Debug("Dev_Accelerometer", $"isHold = {isHold}");
     }
 
     public static void ToggleAccelerometer()
@@ -67,7 +106,7 @@ namespace AppTP.Models
       {
         // Feature not supported on device
       }
-      catch (Exception ex)
+      catch (System.Exception ex)
       {
         // Other error has occurred
       }
