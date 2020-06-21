@@ -115,7 +115,7 @@ namespace AppTP
         buttonOff.SetBackgroundColor(Color.DarkRed);
         Log.Debug("Dev_voice", "Volume OFF");
         isMuted = true;
-        buttonOff.Text = "@string/voixOff";// Resource.String.voixOn;
+        buttonOff.Text = "Voix OFF";// Resource.String.voixOn;
       }
       else
       {
