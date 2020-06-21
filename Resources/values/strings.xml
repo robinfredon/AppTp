@@ -2,4 +2,6 @@
   <string name="app_name">AppTP</string>
   <string name="action_settings">Settings</string>
   <string name="config">Config</string>
+  <string name="voixOff">Voix OFF</string>
+  <string name="voixOn">Voix ON</string>
 </resources>

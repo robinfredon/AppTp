@@ -4458,6 +4458,12 @@ namespace AppTP
 			// aapt resource value: 0x7F0E0038
 			public const int status_bar_notification_info_overflow = 2131623992;
 			
+			// aapt resource value: 0x7F0E0039
+			public const int voixOff = 2131623993;
+			
+			// aapt resource value: 0x7F0E003A
+			public const int voixOn = 2131623994;
+			
 			static String()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();

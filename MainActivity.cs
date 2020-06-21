@@ -37,6 +37,7 @@ namespace AppTP
     private int currentIdVoice = Resource.Id.bVoice1;
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private Boolean isStarted = false;
+    private Boolean isMuted = false;
     private int nbChoc;
     private int nbRoulis;
 
@@ -53,6 +54,7 @@ namespace AppTP
       listCurrentVoice = listShortVoice;
 
       mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
+      isMuted = false;
 
       initVoice();
 
@@ -105,12 +107,16 @@ namespace AppTP
         mediaPlayer.SetVolume(0.0f, 0.0f);
         buttonOff.SetBackgroundColor(Color.DarkRed);
         Log.Debug("Dev_voice", "Volume OFF");
+        isMuted = true;
+        buttonOff.Text = "@string/voixOff";// Resource.String.voixOn;
       }
       else
       {
         mediaPlayer.SetVolume(1f, 1f);
         buttonOff.SetBackgroundColor(Color.White);
         Log.Debug("Dev_voice", "Volume ON");
+        isMuted = false;
+        buttonOff.Text = "Voix ON";
       }
 
       
@@ -130,13 +136,16 @@ namespace AppTP
       base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+    // Handle Click on a Voice button
     public void OnVoiceClick(Button t_button)
     {
       Boolean notInclude = false;
-      while (isPlaying)
+      while (mediaPlayer.IsPlaying)
       {
         //null
       }
+
+      // Check if is new voice 
       if (currentIdVoice != t_button.Id)
       {
         switch (t_button.Id)
@@ -152,6 +161,7 @@ namespace AppTP
             break;
         }
 
+        // Set up & Log
         if (notInclude)
         {
           Log.Warn("Dev_Voice", $"Voice {t_button.Text} not included");
@@ -159,7 +169,9 @@ namespace AppTP
         else
         {
           initVoice();
+          FindViewById<Button>(currentIdVoice).SetBackgroundColor(Color.White);
           currentIdVoice = t_button.Id;
+          t_button.SetBackgroundColor(Color.DeepSkyBlue);
           Log.Info("Dev_Voice", $"New voice : {t_button.Text}");
         }
       }
