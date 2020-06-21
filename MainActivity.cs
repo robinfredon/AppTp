@@ -13,6 +13,8 @@ using Android.Util;
 using Android.Views;
 using Java.Util.Zip;
 using Android.Media;
+using Android.Graphics.Drawables;
+using Android.Graphics;
 
 namespace AppTP
 {
@@ -75,6 +77,9 @@ namespace AppTP
       button9.Click += delegate { OnVoiceClick(button9); };
       Button button10 = (Button)FindViewById(Resource.Id.bVoice10);
       button10.Click += delegate { OnVoiceClick(button10); };
+      Button buttonOff = (Button)FindViewById(Resource.Id.bVoixOff);
+      buttonOff.Click += delegate { OnOffClick(buttonOff); };
+
 
       // SET UP for test_layout.xml view
       /*accView = FindViewById<TextView>(Resource.Id.accView);
@@ -88,6 +93,27 @@ namespace AppTP
       gyrRead = new GyroscopeReader();
       accRead = new AccelerometerReader();
       startTimer();
+    }
+
+    // Handle Click on "Voix Off" button
+    private void OnOffClick(Button buttonOff)
+    {
+      Color bBackColor = (buttonOff.Background as ColorDrawable).Color;
+      
+      if(bBackColor == Color.White)
+      {
+        mediaPlayer.SetVolume(0.0f, 0.0f);
+        buttonOff.SetBackgroundColor(Color.DarkRed);
+        Log.Debug("Dev_voice", "Volume OFF");
+      }
+      else
+      {
+        mediaPlayer.SetVolume(1f, 1f);
+        buttonOff.SetBackgroundColor(Color.White);
+        Log.Debug("Dev_voice", "Volume ON");
+      }
+
+      
     }
 
     // Init after a Voice change
