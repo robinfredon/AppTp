@@ -97,12 +97,19 @@ namespace AppTP
       startTimer();
     }
 
+    public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
+    {
+      Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
+      base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
     // Handle Click on "Voix Off" button
     private void OnOffClick(Button buttonOff)
     {
       Color bBackColor = (buttonOff.Background as ColorDrawable).Color;
-      
-      if(bBackColor == Color.White)
+
+      if (bBackColor == Color.White)
       {
         mediaPlayer.SetVolume(0.0f, 0.0f);
         buttonOff.SetBackgroundColor(Color.DarkRed);
@@ -119,7 +126,7 @@ namespace AppTP
         buttonOff.Text = "Voix ON";
       }
 
-      
+
     }
 
     // Init after a Voice change
@@ -129,12 +136,6 @@ namespace AppTP
       nbRoulis = 0;
     }
 
-    public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
-    {
-      Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
-      base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
 
     // Handle Click on a Voice button
     public void OnVoiceClick(Button t_button)
@@ -226,9 +227,10 @@ namespace AppTP
             //null
           }
           mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
+          checkMuted();
           mediaPlayer.Start();
           isStarted = true;
-          
+
           Log.Debug("Dev_Voice", "Play Start Voice");
         }
       }
@@ -242,11 +244,21 @@ namespace AppTP
             //null
           }
           mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[9]);
+          checkMuted();
           mediaPlayer.Start();
           isStarted = false;
           Log.Debug("Dev_Voice", "Play End Voice");
         }
       }
+    }
+
+    // Reset Volume
+    private void checkMuted()
+    {
+      if (isMuted)
+        mediaPlayer.SetVolume(0.0f, 0.0f);
+      else
+        mediaPlayer.SetVolume(1.0f, 1.0f);
     }
   }
 }
