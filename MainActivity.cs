@@ -148,7 +148,7 @@ namespace AppTP
       Timer1.Start(); 
       Timer1.Interval = 500;
       Timer1.Enabled = true;
-      Timer1.AutoReset = true;
+      //Timer1.AutoReset = true;
       Timer1.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
       {
         RunOnUiThread(() =>
@@ -176,15 +176,26 @@ namespace AppTP
 
     public void studyMove()
     {
-      // Start
       if (!isStarted)
       {
-        if(AccelerometerReader.isHold && AccelerometerReader.accX == 0 && AccelerometerReader.accY == 0)
+        // Scénario 1
+        if(AccelerometerReader.isHold && AccelerometerReader.accX != 0 && AccelerometerReader.accY != 0)
         {
           mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
           mediaPlayer.Start();
           isStarted = true;
           Log.Debug("Dev_Voice", "Play Start Voice");
+        }
+      }
+      else
+      {
+        //Scénario 10
+        if (!AccelerometerReader.isHold)
+        {
+          mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[9]);
+          mediaPlayer.Start();
+          isStarted = false;
+          Log.Debug("Dev_Voice", "Play End Voice");
         }
       }
     }
