@@ -25,8 +25,12 @@ namespace AppTP.Models
     public static decimal oldaccX;
     public static decimal oldaccY;
     public static decimal oldaccZ;
+    public static decimal deltaaccX;
+    public static decimal deltaaccY;
+    public static decimal deltaaccZ;
     private const int nbrDeciDebug = 4;
     private const int nbrDeci = 2;
+    public static bool isLaunchedA = false;
     public static bool isStartedA = false;
     public static bool isHold = false;
 
@@ -38,7 +42,7 @@ namespace AppTP.Models
 
     void Accelerometer_ReadingChanged(object sender, AccelerometerChangedEventArgs e)
     {
-      if (!isStartedA)
+      if (!isLaunchedA)
       {
         var data = e.Reading;
 
@@ -50,41 +54,49 @@ namespace AppTP.Models
         accY = Convert(data.Acceleration.Y);
         accZ = Convert(data.Acceleration.Z);
 
+        computeDelta();
+
         CheckMoving();
         // Log
-        Log.Debug("Dev_Accelerometer", $"Reading Accelerometer: X: {data.Acceleration.X }, Y: {data.Acceleration.Y }, Z: {data.Acceleration.Z}");
-        Log.Debug("Dev_Accelerometer", $"Round Accelerometer: X: {accX }, Y: {accY }, Z: {accZ}");
+        Log.Debug("Dev_Data_Accelerometer", $"Reading Accelerometer: X: {data.Acceleration.X }, Y: {data.Acceleration.Y }, Z: {data.Acceleration.Z}");
+        Log.Debug("Dev_Data_Accelerometer", $"Round Accelerometer: X: {accX }, Y: {accY }, Z: {accZ}");
 
-        isStartedA = true;
+        isLaunchedA = true;
       }
     }
 
+    // Compute each delta
+    private void computeDelta()
+    {
+      deltaaccX = (oldaccX - accX) * 100;
+      deltaaccY = (oldaccY - accY) * 100;
+      deltaaccZ = (oldaccZ - accZ) * 100;
+    }
+
+    // Convert from float to decimal
     private decimal Convert(float x)
     {
-      if(isHold)
-      {
         return Decimal.Round(new decimal(x), nbrDeci);
-      }
-      else
-      {
-        return Decimal.Truncate(new decimal(x));
-      }
     }
 
+    // Check if movement is detected
     private void CheckMoving()
     {
-      if(oldaccX == accX && oldaccY == accY)
-      {
-        isHold = false;
-      }
-      else
+      var deltas = deltaaccY + deltaaccX + deltaaccZ;
+      if (deltas > 30 || deltas < -30)
       {
         isHold = true;
       }
+      else
+      {
+        isHold = false;
+      }
 
-      Log.Debug("Dev_Accelerometer", $"isHold = {isHold}");
+      Log.Debug("Dev_Data_Accelerometer", $"isHold = {isHold}");
+      Log.Debug("Dev_Data_Accelerometer", $"Deltas = {deltas}");
     }
 
+    // Toggle 
     public static void ToggleAccelerometer()
     {
       try

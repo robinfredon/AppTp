@@ -33,7 +33,7 @@ namespace AppTP
     private List<int> listShortVoice = new List<int>();
     private List<int> listLongVoice = new List<int>();
     private List<int> listCurrentVoice = new List<int>();
-    private Boolean isPlaying = false;
+    private Boolean isHold = false;
     private int currentIdVoice = Resource.Id.bVoice1;
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private Boolean isStarted = false;
@@ -125,8 +125,6 @@ namespace AppTP
         isMuted = false;
         buttonOff.Text = "Voix ON";
       }
-
-
     }
 
     // Init after a Voice change
@@ -196,14 +194,14 @@ namespace AppTP
         {
           Log.Debug("Dev_App", "RunOnUiThread()");
 
-          AccelerometerReader.isStartedA = false;
+          AccelerometerReader.isLaunchedA = false;
           AccelerometerReader.ToggleAccelerometer();
           /*accViewX.Text = "X: " + AccelerometerReader.accX.ToString();
           accViewY.Text = "Y: " + AccelerometerReader.accY.ToString();
           accViewZ.Text = "Z: " + AccelerometerReader.accZ.ToString();*/
           //AccelerometerReader.ToggleAccelerometer();
 
-          GyroscopeReader.isStartedG = false;
+          GyroscopeReader.isLaunchedG = false;
           GyroscopeReader.ToggleGyroscope();
           /*gyrViewX.Text = "G X: " + GyroscopeReader.accX.ToString();
           gyrViewY.Text = "G Y: " + GyroscopeReader.accY.ToString();
@@ -215,41 +213,79 @@ namespace AppTP
       };
     }
 
+    private void checkMove()
+    {
+      if (AccelerometerReader.isHold)
+      {
+        // TO DO
+      }
+    }
+
+
     public void studyMove()
     {
-      if (!isStarted)
+      if (!isStarted && (AccelerometerReader.isHold || GyroscopeReader.isHold))
       {
         // Scénario 1
-        if (AccelerometerReader.isHold && AccelerometerReader.accX != 0 && AccelerometerReader.accY != 0)
-        {
-          while (mediaPlayer.IsPlaying)
-          {
-            //null
-          }
-          mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
-          checkMuted();
-          mediaPlayer.Start();
-          isStarted = true;
-
-          Log.Debug("Dev_Voice", "Play Start Voice");
-        }
+        startScen1();
       }
       else
       {
         //Scénario 10
         if (!AccelerometerReader.isHold)
         {
-          while (mediaPlayer.IsPlaying)
-          {
-            //null
-          }
-          mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[9]);
-          checkMuted();
-          mediaPlayer.Start();
-          isStarted = false;
-          Log.Debug("Dev_Voice", "Play End Voice");
+          startScen10();
         }
       }
+    }
+
+    // Generic Play scen
+    /*private void startScen(int i)
+    {
+      while (mediaPlayer.IsPlaying)
+      {
+        //null
+      }
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[i]);
+      checkMuted();
+      mediaPlayer.Start();
+      isStarted = true;
+
+      Log.Debug("Dev_Voice", "Play Start Voice");
+    }*/
+
+    // Play Scenario 1
+    private void startScen1()
+    {
+      while (mediaPlayer.IsPlaying)
+      {
+        //null
+      }
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
+      checkMuted();
+      mediaPlayer.Start();
+      isStarted = true;
+      AccelerometerReader.isStartedA = true;
+      GyroscopeReader.isStartedG = true;
+
+      Log.Debug("Dev_Voice", "Play Start Voice");
+    }
+
+    // Play Scenario 10
+    private void startScen10()
+    {
+      while (mediaPlayer.IsPlaying)
+      {
+        //null
+      }
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[9]);
+      checkMuted();
+      mediaPlayer.Start();
+      isStarted = false;
+      AccelerometerReader.isStartedA = false;
+      GyroscopeReader.isStartedG = false;
+
+      Log.Debug("Dev_Voice", "Play End Voice");
     }
 
     // Reset Volume

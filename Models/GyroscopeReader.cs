@@ -18,16 +18,20 @@ namespace AppTP.Models
   {
     // Set speed  delay for monitoring changes.
     static SensorSpeed speed = SensorSpeed.UI;
-    public static decimal accX = 0.0m;
-    public static decimal accY = 0.0m;
-    public static decimal accZ = 0.0m;
-    public static decimal oldaccX;
-    public static decimal oldaccY;
-    public static decimal oldaccZ;
+    public static decimal gyrX = 0.0m;
+    public static decimal gyrY = 0.0m;
+    public static decimal gyrZ = 0.0m;
+    public static decimal oldgyrX;
+    public static decimal oldgyrY;
+    public static decimal oldgyrZ;
+    public static decimal deltagyrX;
+    public static decimal deltagyrY;
+    public static decimal deltagyrZ;
     private const int nbrDeciDebug = 4;
     private const int nbrDeci = 2;
     public static bool isStartedG = false;
     public static bool isHold = false;
+    public static bool isLaunchedG = false;
 
     public GyroscopeReader()
     {
@@ -35,40 +39,63 @@ namespace AppTP.Models
       Gyroscope.ReadingChanged += this.Gyroscope_ReadingChanged;
     }
 
+    // Handler
     void Gyroscope_ReadingChanged(object sender, GyroscopeChangedEventArgs e)
     {
-      if (!isStartedG)
+      if (!isLaunchedG)
       {
         var data = e.Reading;
 
         // Process Angular Velocity X, Y, and Z
-        oldaccX = accX;
-        oldaccY = accY;
-        oldaccZ = accZ;
-        accX = Convert(data.AngularVelocity.X);
-        accY = Convert(data.AngularVelocity.Y);
-        accZ = Convert(data.AngularVelocity.Z);
+        oldgyrX = gyrX;
+        oldgyrY = gyrY;
+        oldgyrZ = gyrZ;
+        gyrX = Convert(data.AngularVelocity.X);
+        gyrY = Convert(data.AngularVelocity.Y);
+        gyrZ = Convert(data.AngularVelocity.Z);
+
+        computeDelta();
 
         // Log
-        Log.Debug("Dev_Gyroscope", $"Reading Gyroscope: X: {data.AngularVelocity.X }, Y: {data.AngularVelocity.Y }, Z: {data.AngularVelocity.Z}");
-        Log.Debug("Dev_Gyroscope", $"Round Gyroscope: X: {accX }, Y: {accY }, Z: {accZ}");
+        Log.Debug("Dev_Data_Gyroscope", $"Reading Gyroscope: X: {data.AngularVelocity.X }, Y: {data.AngularVelocity.Y }, Z: {data.AngularVelocity.Z}");
+        Log.Debug("Dev_Data_Gyroscope", $"Round Gyroscope: X: {gyrX }, Y: {gyrY }, Z: {gyrZ}");
 
-        isStartedG = true;
+        isLaunchedG = true;
       }
     }
 
+    // Compute each delta
+    private void computeDelta()
+    {
+      deltagyrX = (oldgyrX - gyrX) * 100;
+      deltagyrY = (oldgyrY - gyrY) * 100;
+      deltagyrZ = (oldgyrZ - gyrZ) * 100;
+    }
+
+    // Convert from float to decimal
     private decimal Convert(float x)
     {
-      if (isHold)
+       return Decimal.Round(new decimal(x), nbrDeci);
+    }
+
+    // Check if movement is detected
+    private void CheckMoving()
+    {
+      var deltas = deltagyrY + deltagyrX + deltagyrZ;
+      if (deltas > 30 || deltas < -30)
       {
-        return Decimal.Round(new decimal(x), nbrDeci);
+        isHold = true;
       }
       else
       {
-        return Decimal.Truncate(new decimal(x));
+        isHold = false;
       }
+
+      Log.Debug("Dev_Data_Gyroscope", $"isHold = {isHold}");
+      Log.Debug("Dev_Data_Gyroscope", $"Deltas = {deltas}");
     }
 
+    // Toggle 
     public static void ToggleGyroscope()
     {
       try
