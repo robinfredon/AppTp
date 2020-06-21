@@ -185,14 +185,14 @@ namespace AppTP
     {
       System.Timers.Timer Timer1 = new System.Timers.Timer();
       Timer1.Start();
-      Timer1.Interval = 500;
+      Timer1.Interval = 1000;
       Timer1.Enabled = true;
       //Timer1.AutoReset = true;
       Timer1.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
       {
         RunOnUiThread(() =>
         {
-          Log.Debug("Dev_App", "RunOnUiThread()");
+          Log.Debug("Dev_App", "Timer1 - RunOnUiThread()");
 
           AccelerometerReader.isLaunchedA = false;
           AccelerometerReader.ToggleAccelerometer();
@@ -201,38 +201,44 @@ namespace AppTP
           accViewZ.Text = "Z: " + AccelerometerReader.accZ.ToString();*/
           //AccelerometerReader.ToggleAccelerometer();
 
-          GyroscopeReader.isLaunchedG = false;
-          GyroscopeReader.ToggleGyroscope();
+          /*GyroscopeReader.isLaunchedG = false;
+          GyroscopeReader.ToggleGyroscope();*/
           /*gyrViewX.Text = "G X: " + GyroscopeReader.accX.ToString();
           gyrViewY.Text = "G Y: " + GyroscopeReader.accY.ToString();
           gyrViewZ.Text = "G Z: " + GyroscopeReader.accZ.ToString();*/
           //GyroscopeReader.ToggleGyroscope();
 
-          studyMove();
         });
       };
-    }
 
-    private void checkMove()
-    {
-      if (AccelerometerReader.isHold)
+      /*System.Timers.Timer Timer2 = new System.Timers.Timer();
+      Timer2.Start();
+      Timer2.Interval = 1000;
+      Timer2.Enabled = true;
+      Timer2.AutoReset = true;
+      Timer2.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
       {
-        // TO DO
-      }
+        RunOnUiThread(() =>
+        {
+          Log.Debug("Dev_App", "Timer2 - RunOnUiThread()");
+
+          studyMove();
+        });
+      };*/
     }
 
-
+    // Identify which scenario to play if movement
     public void studyMove()
     {
-      if (!isStarted && (AccelerometerReader.isHold || GyroscopeReader.isHold))
+      if (!isStarted && (AccelerometerReader.isHoldA || GyroscopeReader.isHoldG))
       {
         // Scénario 1
         startScen1();
       }
-      else
+      else if (isStarted)
       {
         //Scénario 10
-        if (!AccelerometerReader.isHold)
+        if (!AccelerometerReader.isHoldA && !GyroscopeReader.isHoldG)
         {
           startScen10();
         }

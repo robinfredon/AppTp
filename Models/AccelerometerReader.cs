@@ -19,6 +19,7 @@ namespace AppTP.Models
   {
     // Set speed  delay for monitoring changes.
     static SensorSpeed speed = SensorSpeed.UI;
+    // COORD
     public static decimal accX = 0.0m;
     public static decimal accY = 0.0m;
     public static decimal accZ = 0.0m;
@@ -28,11 +29,14 @@ namespace AppTP.Models
     public static decimal deltaaccX;
     public static decimal deltaaccY;
     public static decimal deltaaccZ;
-    private const int nbrDeciDebug = 4;
-    private const int nbrDeci = 2;
+    // BOOL
     public static bool isLaunchedA = false;
     public static bool isStartedA = false;
-    public static bool isHold = false;
+    public static bool isHoldA = false;
+    // CONST
+    private const int nbrDeciDebug = 4;
+    private const int nbrDeci = 2;
+    private const int limitBreakMove = 30;
 
     public AccelerometerReader()
     {
@@ -40,6 +44,7 @@ namespace AppTP.Models
       Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
     }
 
+    // Handler
     void Accelerometer_ReadingChanged(object sender, AccelerometerChangedEventArgs e)
     {
       if (!isLaunchedA)
@@ -54,9 +59,10 @@ namespace AppTP.Models
         accY = Convert(data.Acceleration.Y);
         accZ = Convert(data.Acceleration.Z);
 
-        computeDelta();
+        /*computeDelta();
 
-        CheckMoving();
+        CheckMoving();*/
+
         // Log
         Log.Debug("Dev_Data_Accelerometer", $"Reading Accelerometer: X: {data.Acceleration.X }, Y: {data.Acceleration.Y }, Z: {data.Acceleration.Z}");
         Log.Debug("Dev_Data_Accelerometer", $"Round Accelerometer: X: {accX }, Y: {accY }, Z: {accZ}");
@@ -83,17 +89,17 @@ namespace AppTP.Models
     private void CheckMoving()
     {
       var deltas = deltaaccY + deltaaccX + deltaaccZ;
-      if (deltas > 30 || deltas < -30)
+      if (deltas > limitBreakMove || deltas < -limitBreakMove)
       {
-        isHold = true;
+        isHoldA = true;
       }
       else
       {
-        isHold = false;
+        isHoldA = false;
       }
 
-      Log.Debug("Dev_Data_Accelerometer", $"isHold = {isHold}");
-      Log.Debug("Dev_Data_Accelerometer", $"Deltas = {deltas}");
+      Log.Debug("Dev_Move_Accelerometer", $"isHoldA = {isHoldA}");
+      Log.Debug("Dev_Move_Accelerometer", $"Deltas = {deltas}");
     }
 
     // Toggle 
