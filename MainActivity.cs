@@ -50,6 +50,8 @@ namespace AppTP
       listLongVoice.AddRange(new int[] { Resource.Raw.Voice02_01, Resource.Raw.Voice02_02, Resource.Raw.Voice02_03, Resource.Raw.Voice02_04, Resource.Raw.Voice02_05, Resource.Raw.Voice02_06, Resource.Raw.Voice02_07, Resource.Raw.Voice02_08, Resource.Raw.Voice02_09, Resource.Raw.Voice02_10 });
       listCurrentVoice = listShortVoice;
 
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
+
       initVoice();
 
       // Add onClick Listener
@@ -109,7 +111,7 @@ namespace AppTP
       {
         //null
       }
-      if(currentIdVoice != t_button.Id)
+      if (currentIdVoice != t_button.Id)
       {
         switch (t_button.Id)
         {
@@ -145,7 +147,7 @@ namespace AppTP
     public void startTimer()
     {
       System.Timers.Timer Timer1 = new System.Timers.Timer();
-      Timer1.Start(); 
+      Timer1.Start();
       Timer1.Interval = 500;
       Timer1.Enabled = true;
       //Timer1.AutoReset = true;
@@ -179,11 +181,16 @@ namespace AppTP
       if (!isStarted)
       {
         // Scénario 1
-        if(AccelerometerReader.isHold && AccelerometerReader.accX != 0 && AccelerometerReader.accY != 0)
+        if (AccelerometerReader.isHold && AccelerometerReader.accX != 0 && AccelerometerReader.accY != 0)
         {
+          while (mediaPlayer.IsPlaying)
+          {
+            //null
+          }
           mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
           mediaPlayer.Start();
           isStarted = true;
+          
           Log.Debug("Dev_Voice", "Play Start Voice");
         }
       }
@@ -192,6 +199,10 @@ namespace AppTP
         //Scénario 10
         if (!AccelerometerReader.isHold)
         {
+          while (mediaPlayer.IsPlaying)
+          {
+            //null
+          }
           mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[9]);
           mediaPlayer.Start();
           isStarted = false;
