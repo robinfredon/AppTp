@@ -18,9 +18,16 @@ namespace AppTP.Models
   {
     // Set speed  delay for monitoring changes.
     static SensorSpeed speed = SensorSpeed.UI;
-    public static float accX;
-    public static float accY;
-    public static float accZ;
+    public static decimal accX = 0.0m;
+    public static decimal accY = 0.0m;
+    public static decimal accZ = 0.0m;
+    public static decimal oldaccX;
+    public static decimal oldaccY;
+    public static decimal oldaccZ;
+    private const int nbrDeciDebug = 4;
+    private const int nbrDeci = 2;
+    public static bool isStartedG = false;
+    public static bool isHold = false;
 
     public GyroscopeReader()
     {
@@ -30,13 +37,36 @@ namespace AppTP.Models
 
     void Gyroscope_ReadingChanged(object sender, GyroscopeChangedEventArgs e)
     {
-      var data = e.Reading;
-      // Process Angular Velocity X, Y, and Z
-      accX = data.AngularVelocity.X;
-      accY = data.AngularVelocity.Y;
-      accZ = data.AngularVelocity.Z;
-      Log.Debug("Dev_Gyroscope", $"Reading Gyroscope: X: {data.AngularVelocity.X }, Y: {data.AngularVelocity.Y }, Z:{data.AngularVelocity.Z}");
+      if (!isStartedG)
+      {
+        var data = e.Reading;
 
+        // Process Angular Velocity X, Y, and Z
+        oldaccX = accX;
+        oldaccY = accY;
+        oldaccZ = accZ;
+        accX = Convert(data.AngularVelocity.X);
+        accY = Convert(data.AngularVelocity.Y);
+        accZ = Convert(data.AngularVelocity.Z);
+
+        // Log
+        Log.Debug("Dev_Gyroscope", $"Reading Gyroscope: X: {data.AngularVelocity.X }, Y: {data.AngularVelocity.Y }, Z: {data.AngularVelocity.Z}");
+        Log.Debug("Dev_Gyroscope", $"Round Gyroscope: X: {accX }, Y: {accY }, Z: {accZ}");
+
+        isStartedG = true;
+      }
+    }
+
+    private decimal Convert(float x)
+    {
+      if (isHold)
+      {
+        return Decimal.Round(new decimal(x), nbrDeci);
+      }
+      else
+      {
+        return Decimal.Truncate(new decimal(x));
+      }
     }
 
     public static void ToggleGyroscope()
