@@ -18,21 +18,35 @@ namespace AppTP.Models
   {
     // Set speed  delay for monitoring changes.
     static SensorSpeed speed = SensorSpeed.UI;
+
+    // COORD
     public static decimal accX = 0.0m;
     public static decimal accY = 0.0m;
     public static decimal accZ = 1.0m;
-    public static decimal oldaccX;
-    public static decimal oldaccY;
-    public static decimal oldaccZ;
-    public static decimal deltaaccX;
-    public static decimal deltaaccY;
-    public static decimal deltaaccZ;
+    public static decimal oldAccX;
+    public static decimal oldAccY;
+    public static decimal oldAccZ;
+    public static decimal deltaAccX;
+    public static decimal deltaAccY;
+    public static decimal deltaAccZ;
+    public static decimal speedX;
+    public static decimal speedY;
+    public static decimal speedZ;
+
+    // BOOLEAN
     public static bool isLaunchedA = false;
     public static bool isStartedA = false;
     public static bool isHoldA = false;
+    public static bool isChock = false;
+
+    // CONST
     private const int nbrDeciDebug = 4;
     private const int nbrDeci = 2;
     private const int limitBreakMove = 50;
+    private const int limitBreakStand = 2;
+
+    // VAR
+    public static int nbChock = 0;
 
     public AccelerometerReader()
     {
@@ -47,9 +61,9 @@ namespace AppTP.Models
         var data = e.Reading;
 
         // Process Acceleration X, Y, and Z
-        oldaccX = accX;
-        oldaccY = accY;
-        oldaccZ = accZ;
+        oldAccX = accX;
+        oldAccY = accY;
+        oldAccZ = accZ;
         accX = Convert(data.Acceleration.X);
         accY = Convert(data.Acceleration.Y);
         accZ = Convert(data.Acceleration.Z);
@@ -69,9 +83,11 @@ namespace AppTP.Models
     // Compute each delta
     private void computeDelta()
     {
-      deltaaccX = (oldaccX - accX) * 100;
-      deltaaccY = (oldaccY - accY) * 100;
-      deltaaccZ = (oldaccZ - accZ) * 100;
+      deltaAccX = (oldAccX - accX) * 100;
+      deltaAccY = (oldAccY - accY) * 100;
+      deltaAccZ = (oldAccZ - accZ) * 100;
+
+      Log.Debug("Dev_Data_Acc_Delta", $"Delta Accelerometer: X: {deltaAccX }, Y: {deltaAccY }, Z: {deltaAccZ}");
     }
 
     // Convert from float to decimal
@@ -83,20 +99,31 @@ namespace AppTP.Models
     // Check if movement is detected
     private void CheckMoving()
     {
-      var deltas = deltaaccY + deltaaccX + deltaaccZ;
+      var deltas = deltaAccY + deltaAccX + deltaAccZ;
       if (isHoldA)
       {
-        if(Math.Abs(accZ) > 0.95m && Math.Abs(accX) < 0.05m && Math.Abs(accY) < 0.05m)
+        if(Math.Abs(deltaAccZ) < 6.0m && Math.Abs(deltaAccX) < 6.0m && Math.Abs(deltaAccY) < 6.0m)
         {
           isHoldA = false;
         }
       }
       else
       {
-        if ( Math.Abs(deltas) > limitBreakMove )
+        if(!isStartedA)
         {
-          isHoldA = true;
+          if (Math.Abs(deltas) > limitBreakMove || Math.Abs(deltaAccX) > limitBreakMove || Math.Abs(deltaAccY) > limitBreakMove)
+          {
+            isHoldA = true;
+          }
         }
+        else
+        {
+          if(Math.Abs(deltas) > limitBreakStand)
+          {
+            isHoldA = true;
+          }
+        }
+        
       }
 
       Log.Debug("Dev_Data_Acc_Move", $"isHoldA = {isHoldA}");

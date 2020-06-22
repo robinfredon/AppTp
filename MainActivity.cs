@@ -187,7 +187,7 @@ namespace AppTP
       Timer1.Start();
       Timer1.Interval = 500;
       Timer1.Enabled = true;
-      Timer1.AutoReset = true;
+      //Timer1.AutoReset = true;
       Timer1.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
       {
         RunOnUiThread(() =>
@@ -213,9 +213,9 @@ namespace AppTP
 
       System.Timers.Timer Timer2 = new System.Timers.Timer();
       Timer2.Start();
-      Timer2.Interval = 1000;
+      Timer2.Interval = 100;
       Timer2.Enabled = true;
-      Timer2.AutoReset = true;
+      //Timer2.AutoReset = true;
       Timer2.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
       {
         RunOnUiThread(() =>
@@ -241,7 +241,7 @@ namespace AppTP
         {
 
         }
-        else if (GyroscopeReader.isRollG) // Scénario Roll 2 & 3 & 4
+        else if (GyroscopeReader.isRollG && GyroscopeReader.isRollUpdated) // Scénario Roll 2 & 3 & 4
         {
           if (GyroscopeReader.nbRowRoll == 1)
           {
@@ -249,13 +249,11 @@ namespace AppTP
             {
               // Scen 2
               startScenR(2);
-              GyroscopeReader.isFirstRoll = false;
             }
             else
             {
               // scen 4
               startScenR(4);
-              GyroscopeReader.isFirstRoll = true;
             }
           }
           else if (GyroscopeReader.nbRowRoll >= 10 && GyroscopeReader.nbRowRoll % 5 == 0)
@@ -268,6 +266,7 @@ namespace AppTP
         {
           startScen10();
         }
+        GyroscopeReader.isRollUpdated = false;
       }
     }
 

@@ -37,16 +37,18 @@ namespace AppTP.Models
     public static bool isRollG = false;
     public static bool isLaunchedG = false;
     public static bool isFirstRoll = true;
+    public static bool isRollUpdated = false;
 
     // CONST
     private const int nbrDeciDebug = 4;
     private const int nbrDeci = 2;
     private const int limitBreakMove = 100;
     private const int limitBreakStand = 2;
-    private const int limitBreakRoll = 50;
+    private const int limitBreakRoll = 200;
 
     // VAR
     public static int nbRowRoll = 0;
+    public static int delayNewRoll = 2;
 
     public GyroscopeReader()
     {
@@ -135,8 +137,10 @@ namespace AppTP.Models
         {
           isRollG = true;
           nbRowRoll = 1;
+          isFirstRoll = !isFirstRoll;
         }
       }
+      isRollUpdated = true;
 
       Log.Debug("Dev_Data_Gyr_Move", $"isHoldG = {isHoldG}");
       Log.Debug("Dev_Data_Gyr_Move", $"isRoll G = {isRollG}");
