@@ -38,8 +38,6 @@ namespace AppTP
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private Boolean isStarted = false;
     private Boolean isMuted = false;
-    private int nbChoc;
-    private int nbRoulis;
 
     protected override void OnCreate(Bundle savedInstanceState)
     {
@@ -130,8 +128,10 @@ namespace AppTP
     // Init after a Voice change
     private void initVoice()
     {
-      nbChoc = 0;
-      nbRoulis = 0;
+      //nbChoc = 0;
+      GyroscopeReader.isRollG = false;
+      GyroscopeReader.nbRowRoll = 0;
+      GyroscopeReader.isFirstRoll = false;
     }
 
 
@@ -237,12 +237,52 @@ namespace AppTP
       }
       else if (isStarted)
       {
-        //Scénario 10
-        if (!AccelerometerReader.isHoldA && !GyroscopeReader.isHoldG)
+        if (AccelerometerReader.isChock) // Scénario Choc 5 & 6 & 7
+        {
+
+        }
+        else if (GyroscopeReader.isRollG) // Scénario Roll 2 & 3 & 4
+        {
+          if (GyroscopeReader.nbRowRoll == 1)
+          {
+            if (GyroscopeReader.isFirstRoll)
+            {
+              // Scen 2
+              startScenR(2);
+              GyroscopeReader.isFirstRoll = false;
+            }
+            else
+            {
+              // scen 4
+              startScenR(4);
+              GyroscopeReader.isFirstRoll = true;
+            }
+          }
+          else if (GyroscopeReader.nbRowRoll >= 10 && GyroscopeReader.nbRowRoll % 5 == 0)
+          {
+            // Scen 3
+            startScenR(3);
+          }
+        }
+        else if (!AccelerometerReader.isHoldA && !GyroscopeReader.isHoldG) // Scénario 10
         {
           startScen10();
         }
       }
+    }
+
+    // Start Roll Scen 2&3&4
+    private void startScenR(int i)
+    {
+      while (mediaPlayer.IsPlaying)
+      {
+        //null
+      }
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[i - 1]);
+      checkMuted();
+      mediaPlayer.Start();
+
+      Log.Debug("Dev_Voice", $"Play Roll Voice {i}");
     }
 
     // Generic Play scen
@@ -273,6 +313,7 @@ namespace AppTP
       isStarted = true;
       AccelerometerReader.isStartedA = true;
       GyroscopeReader.isStartedG = true;
+      initVoice();
 
       Log.Debug("Dev_Voice", "Play Start Voice");
     }
