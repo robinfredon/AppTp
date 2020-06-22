@@ -43,13 +43,14 @@ namespace AppTP.Models
     // CONST
     private const int nbrDeciDebug = 4;
     private const int nbrDeci = 2;
-    private const int limitBreakMove = 50;
+    private const int limitBreakMove = 40;
     private const int limitBreakStand = 2;
     private const int limitChoc = 50;
-    public const int timeIntervalMs = 400;
+    public const int timeIntervalMs = 500;
 
     // VAR
     public static int nbChock = 0;
+    public static int nbTickLin = 0;
 
     public AccelerometerReader()
     {
@@ -133,7 +134,7 @@ namespace AppTP.Models
 
       var oldDeltas = oldDeltaY + oldDeltaX + oldDeltaZ;
       // Choc management
-      if (isHoldA && isStartedA)
+      if (isHoldA && isStartedA && nbTickLin > 1)
       {
         if((Math.Sign(deltas) != Math.Sign(oldDeltas)) && !isChock && Math.Abs(deltas) > limitChoc)
         {

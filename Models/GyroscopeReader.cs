@@ -42,13 +42,12 @@ namespace AppTP.Models
     // CONST
     private const int nbrDeciDebug = 4;
     private const int nbrDeci = 2;
-    private const int limitBreakMove = 100;
+    private const int limitBreakMove = 40;
     private const int limitBreakStand = 2;
     private const int limitBreakRoll = 200;
 
     // VAR
     public static int nbRowRoll = 0;
-    public static int delayNewRoll = 2;
 
     public GyroscopeReader()
     {
