@@ -15,9 +15,11 @@ using Java.Util.Zip;
 using Android.Media;
 using Android.Graphics.Drawables;
 using Android.Graphics;
+using Android.Hardware.Camera2;
 
 namespace AppTP
 {
+  
   [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
   public class MainActivity : AppCompatActivity
   {
@@ -128,10 +130,13 @@ namespace AppTP
     // Init after a Voice change
     private void initVoice()
     {
-      //nbChoc = 0;
+      AccelerometerReader.isChocUpdated = false;
+      AccelerometerReader.isChock = false;
+      AccelerometerReader.nbChock = 0;
       GyroscopeReader.isRollG = false;
       GyroscopeReader.nbRowRoll = 0;
       GyroscopeReader.isFirstRoll = false;
+      GyroscopeReader.isRollUpdated = false;
     }
 
 
@@ -185,7 +190,7 @@ namespace AppTP
     {
       System.Timers.Timer Timer1 = new System.Timers.Timer();
       Timer1.Start();
-      Timer1.Interval = 500;
+      Timer1.Interval = AccelerometerReader.timeIntervalMs;
       Timer1.Enabled = true;
       //Timer1.AutoReset = true;
       Timer1.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
@@ -208,12 +213,13 @@ namespace AppTP
           gyrViewZ.Text = "G Z: " + GyroscopeReader.accZ.ToString();*/
           //GyroscopeReader.ToggleGyroscope();
 
+          studyMove();
         });
       };
 
-      System.Timers.Timer Timer2 = new System.Timers.Timer();
+      /*System.Timers.Timer Timer2 = new System.Timers.Timer();
       Timer2.Start();
-      Timer2.Interval = 100;
+      Timer2.Interval = AccelerometerReader.timeIntervalMs;
       Timer2.Enabled = true;
       //Timer2.AutoReset = true;
       Timer2.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
@@ -224,7 +230,7 @@ namespace AppTP
 
           studyMove();
         });
-      };
+      };*/
     }
 
     // Identify which scenario to play if movement
@@ -237,9 +243,22 @@ namespace AppTP
       }
       else if (isStarted)
       {
-        if (AccelerometerReader.isChock) // Scénario Choc 5 & 6 & 7
+        if (AccelerometerReader.isChock && AccelerometerReader.isChocUpdated) // Scénario Choc 5 & 6 & 7
         {
-
+          switch(AccelerometerReader.nbChock)
+          {
+            case 1:
+              startScenC(5); // Scénario 5
+              break;
+            case 2:
+              startScenC(6); // Scénario 6
+              break;
+            case 3:
+              startScenC(7); // Scénario 7
+              AccelerometerReader.nbChock = 0;
+              break;
+          }
+          AccelerometerReader.isChocUpdated = false;
         }
         else if (GyroscopeReader.isRollG && GyroscopeReader.isRollUpdated) // Scénario Roll 2 & 3 & 4
         {
@@ -284,20 +303,19 @@ namespace AppTP
       Log.Debug("Dev_Voice", $"Play Roll Voice {i}");
     }
 
-    // Generic Play scen
-    /*private void startScen(int i)
+    // Start Choc Scen 5&6&7
+    private void startScenC(int i)
     {
       while (mediaPlayer.IsPlaying)
       {
         //null
       }
-      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[i]);
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[i - 1]);
       checkMuted();
       mediaPlayer.Start();
-      isStarted = true;
 
-      Log.Debug("Dev_Voice", "Play Start Voice");
-    }*/
+      Log.Debug("Dev_Voice", $"Play Choc Voice {i}");
+    }
 
     // Play Scenario 1
     private void startScen1()
