@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using Java.Lang;
 using Xamarin.Essentials;
 
 namespace AppTP.Models
@@ -21,14 +20,19 @@ namespace AppTP.Models
     static SensorSpeed speed = SensorSpeed.UI;
     public static decimal accX = 0.0m;
     public static decimal accY = 0.0m;
-    public static decimal accZ = 0.0m;
+    public static decimal accZ = 1.0m;
     public static decimal oldaccX;
     public static decimal oldaccY;
     public static decimal oldaccZ;
+    public static decimal deltaaccX;
+    public static decimal deltaaccY;
+    public static decimal deltaaccZ;
+    public static bool isLaunchedA = false;
+    public static bool isStartedA = false;
+    public static bool isHoldA = false;
     private const int nbrDeciDebug = 4;
     private const int nbrDeci = 2;
-    public static bool isStartedA = false;
-    public static bool isHold = false;
+    private const int limitBreakMove = 50;
 
     public AccelerometerReader()
     {
@@ -38,7 +42,7 @@ namespace AppTP.Models
 
     void Accelerometer_ReadingChanged(object sender, AccelerometerChangedEventArgs e)
     {
-      if (!isStartedA)
+      if (!isLaunchedA)
       {
         var data = e.Reading;
 
@@ -50,39 +54,53 @@ namespace AppTP.Models
         accY = Convert(data.Acceleration.Y);
         accZ = Convert(data.Acceleration.Z);
 
-        CheckMoving();
-        // Log
-        Log.Debug("Dev_Accelerometer", $"Reading Accelerometer: X: {data.Acceleration.X }, Y: {data.Acceleration.Y }, Z: {data.Acceleration.Z}");
-        Log.Debug("Dev_Accelerometer", $"Round Accelerometer: X: {accX }, Y: {accY }, Z: {accZ}");
+        computeDelta();
 
-        isStartedA = true;
+        CheckMoving();
+
+        // Log
+        Log.Debug("Dev_Data_Acc_Coord", $"Reading Accelerometer: X: {data.Acceleration.X }, Y: {data.Acceleration.Y }, Z: {data.Acceleration.Z}");
+        Log.Debug("Dev_Data_Acc_Coord", $"Round Accelerometer: X: {accX }, Y: {accY }, Z: {accZ}");
+
+        isLaunchedA = true;
       }
     }
 
+    // Compute each delta
+    private void computeDelta()
+    {
+      deltaaccX = (oldaccX - accX) * 100;
+      deltaaccY = (oldaccY - accY) * 100;
+      deltaaccZ = (oldaccZ - accZ) * 100;
+    }
+
+    // Convert from float to decimal
     private decimal Convert(float x)
     {
-      if(isHold)
-      {
         return Decimal.Round(new decimal(x), nbrDeci);
-      }
-      else
-      {
-        return Decimal.Truncate(new decimal(x));
-      }
     }
 
+    // Check if movement is detected
     private void CheckMoving()
     {
-      if(oldaccX == accX && oldaccY == accY)
+      var deltas = deltaaccY + deltaaccX + deltaaccZ;
+      if (isHoldA)
       {
-        isHold = false;
+        if(Math.Abs(accZ) > 0.95m && Math.Abs(accX) < 0.05m && Math.Abs(accY) < 0.05m)
+        {
+          isHoldA = false;
+        }
       }
       else
       {
-        isHold = true;
+        if ( Math.Abs(deltas) > limitBreakMove )
+        {
+          isHoldA = true;
+        }
       }
 
-      Log.Debug("Dev_Accelerometer", $"isHold = {isHold}");
+      Log.Debug("Dev_Data_Acc_Move", $"isHoldA = {isHoldA}");
+      Log.Debug("Dev_Data_Acc_Move", $"Deltas A = {deltas}");
     }
 
     public static void ToggleAccelerometer()

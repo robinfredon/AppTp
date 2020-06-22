@@ -13,6 +13,8 @@ using Android.Util;
 using Android.Views;
 using Java.Util.Zip;
 using Android.Media;
+using Android.Graphics.Drawables;
+using Android.Graphics;
 
 namespace AppTP
 {
@@ -31,10 +33,11 @@ namespace AppTP
     private List<int> listShortVoice = new List<int>();
     private List<int> listLongVoice = new List<int>();
     private List<int> listCurrentVoice = new List<int>();
-    private Boolean isPlaying = false;
+    private Boolean isHold = false;
     private int currentIdVoice = Resource.Id.bVoice1;
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private Boolean isStarted = false;
+    private Boolean isMuted = false;
     private int nbChoc;
     private int nbRoulis;
 
@@ -51,6 +54,7 @@ namespace AppTP
       listCurrentVoice = listShortVoice;
 
       mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
+      isMuted = false;
 
       initVoice();
 
@@ -75,6 +79,9 @@ namespace AppTP
       button9.Click += delegate { OnVoiceClick(button9); };
       Button button10 = (Button)FindViewById(Resource.Id.bVoice10);
       button10.Click += delegate { OnVoiceClick(button10); };
+      Button buttonOff = (Button)FindViewById(Resource.Id.bVoixOff);
+      buttonOff.Click += delegate { OnOffClick(buttonOff); };
+
 
       // SET UP for test_layout.xml view
       /*accView = FindViewById<TextView>(Resource.Id.accView);
@@ -90,13 +97,6 @@ namespace AppTP
       startTimer();
     }
 
-    // Init after a Voice change
-    private void initVoice()
-    {
-      nbChoc = 0;
-      nbRoulis = 0;
-    }
-
     public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
     {
       Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -104,13 +104,47 @@ namespace AppTP
       base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+    // Handle Click on "Voix Off" button
+    private void OnOffClick(Button buttonOff)
+    {
+      Color bBackColor = (buttonOff.Background as ColorDrawable).Color;
+
+      if (bBackColor == Color.White)
+      {
+        mediaPlayer.SetVolume(0.0f, 0.0f);
+        buttonOff.SetBackgroundColor(Color.DarkRed);
+        Log.Debug("Dev_voice", "Volume OFF");
+        isMuted = true;
+        buttonOff.Text = "Voix OFF";// Resource.String.voixOn;
+      }
+      else
+      {
+        mediaPlayer.SetVolume(1f, 1f);
+        buttonOff.SetBackgroundColor(Color.White);
+        Log.Debug("Dev_voice", "Volume ON");
+        isMuted = false;
+        buttonOff.Text = "Voix ON";
+      }
+    }
+
+    // Init after a Voice change
+    private void initVoice()
+    {
+      nbChoc = 0;
+      nbRoulis = 0;
+    }
+
+
+    // Handle Click on a Voice button
     public void OnVoiceClick(Button t_button)
     {
       Boolean notInclude = false;
-      while (isPlaying)
+      while (mediaPlayer.IsPlaying)
       {
         //null
       }
+
+      // Check if is new voice 
       if (currentIdVoice != t_button.Id)
       {
         switch (t_button.Id)
@@ -126,6 +160,7 @@ namespace AppTP
             break;
         }
 
+        // Set up & Log
         if (notInclude)
         {
           Log.Warn("Dev_Voice", $"Voice {t_button.Text} not included");
@@ -133,7 +168,9 @@ namespace AppTP
         else
         {
           initVoice();
+          FindViewById<Button>(currentIdVoice).SetBackgroundColor(Color.White);
           currentIdVoice = t_button.Id;
+          t_button.SetBackgroundColor(Color.DeepSkyBlue);
           Log.Info("Dev_Voice", $"New voice : {t_button.Text}");
         }
       }
@@ -150,65 +187,120 @@ namespace AppTP
       Timer1.Start();
       Timer1.Interval = 500;
       Timer1.Enabled = true;
-      //Timer1.AutoReset = true;
+      Timer1.AutoReset = true;
       Timer1.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
       {
         RunOnUiThread(() =>
         {
-          Log.Debug("Dev_App", "RunOnUiThread()");
+          Log.Debug("Dev_App", "Timer1 - RunOnUiThread()");
 
-          AccelerometerReader.isStartedA = false;
+          AccelerometerReader.isLaunchedA = false;
           AccelerometerReader.ToggleAccelerometer();
           /*accViewX.Text = "X: " + AccelerometerReader.accX.ToString();
           accViewY.Text = "Y: " + AccelerometerReader.accY.ToString();
           accViewZ.Text = "Z: " + AccelerometerReader.accZ.ToString();*/
           //AccelerometerReader.ToggleAccelerometer();
 
-          GyroscopeReader.isStartedG = false;
+          GyroscopeReader.isLaunchedG = false;
           GyroscopeReader.ToggleGyroscope();
           /*gyrViewX.Text = "G X: " + GyroscopeReader.accX.ToString();
           gyrViewY.Text = "G Y: " + GyroscopeReader.accY.ToString();
           gyrViewZ.Text = "G Z: " + GyroscopeReader.accZ.ToString();*/
           //GyroscopeReader.ToggleGyroscope();
 
+        });
+      };
+
+      System.Timers.Timer Timer2 = new System.Timers.Timer();
+      Timer2.Start();
+      Timer2.Interval = 1000;
+      Timer2.Enabled = true;
+      Timer2.AutoReset = true;
+      Timer2.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
+      {
+        RunOnUiThread(() =>
+        {
+          Log.Debug("Dev_App", "Timer2 - RunOnUiThread()");
+
           studyMove();
         });
       };
     }
 
+    // Identify which scenario to play if movement
     public void studyMove()
     {
-      if (!isStarted)
+      if (!isStarted && (AccelerometerReader.isHoldA && GyroscopeReader.isHoldG))
       {
         // Scénario 1
-        if (AccelerometerReader.isHold && AccelerometerReader.accX != 0 && AccelerometerReader.accY != 0)
-        {
-          while (mediaPlayer.IsPlaying)
-          {
-            //null
-          }
-          mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
-          mediaPlayer.Start();
-          isStarted = true;
-          
-          Log.Debug("Dev_Voice", "Play Start Voice");
-        }
+        startScen1();
       }
-      else
+      else if (isStarted)
       {
         //Scénario 10
-        if (!AccelerometerReader.isHold)
+        if (!AccelerometerReader.isHoldA && !GyroscopeReader.isHoldG)
         {
-          while (mediaPlayer.IsPlaying)
-          {
-            //null
-          }
-          mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[9]);
-          mediaPlayer.Start();
-          isStarted = false;
-          Log.Debug("Dev_Voice", "Play End Voice");
+          startScen10();
         }
       }
+    }
+
+    // Generic Play scen
+    /*private void startScen(int i)
+    {
+      while (mediaPlayer.IsPlaying)
+      {
+        //null
+      }
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[i]);
+      checkMuted();
+      mediaPlayer.Start();
+      isStarted = true;
+
+      Log.Debug("Dev_Voice", "Play Start Voice");
+    }*/
+
+    // Play Scenario 1
+    private void startScen1()
+    {
+      while (mediaPlayer.IsPlaying)
+      {
+        //null
+      }
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
+      checkMuted();
+      mediaPlayer.Start();
+      isStarted = true;
+      AccelerometerReader.isStartedA = true;
+      GyroscopeReader.isStartedG = true;
+
+      Log.Debug("Dev_Voice", "Play Start Voice");
+    }
+
+    // Play Scenario 10
+    private void startScen10()
+    {
+      while (mediaPlayer.IsPlaying)
+      {
+        //null
+      }
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[9]);
+      checkMuted();
+      mediaPlayer.Start();
+      isStarted = false;
+      AccelerometerReader.isStartedA = false;
+      GyroscopeReader.isStartedG = false;
+
+      Log.Debug("Dev_Voice", "Play End Voice");
+    }
+
+    // Reset Volume
+    private void checkMuted()
+    {
+      if (isMuted)
+        mediaPlayer.SetVolume(0.0f, 0.0f);
+      else
+        mediaPlayer.SetVolume(1.0f, 1.0f);
     }
   }
 }
