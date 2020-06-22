@@ -211,7 +211,7 @@ namespace AppTP
         });
       };
 
-      /*System.Timers.Timer Timer2 = new System.Timers.Timer();
+      System.Timers.Timer Timer2 = new System.Timers.Timer();
       Timer2.Start();
       Timer2.Interval = 1000;
       Timer2.Enabled = true;
@@ -224,13 +224,13 @@ namespace AppTP
 
           studyMove();
         });
-      };*/
+      };
     }
 
     // Identify which scenario to play if movement
     public void studyMove()
     {
-      if (!isStarted && (AccelerometerReader.isHoldA || GyroscopeReader.isHoldG))
+      if (!isStarted && (AccelerometerReader.isHoldA && GyroscopeReader.isHoldG))
       {
         // Scénario 1
         startScen1();

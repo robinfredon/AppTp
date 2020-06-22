@@ -38,7 +38,8 @@ namespace AppTP.Models
     // CONST
     private const int nbrDeciDebug = 4;
     private const int nbrDeci = 2;
-    private const int limitBreakMove = 200;
+    private const int limitBreakMove = 100;
+    private const int limitBreakStand = 2;
 
     public GyroscopeReader()
     {
@@ -66,8 +67,8 @@ namespace AppTP.Models
         CheckMoving();
 
         // Log
-        Log.Debug("Dev_Data_Gyroscope", $"Reading Gyroscope: X: {data.AngularVelocity.X }, Y: {data.AngularVelocity.Y }, Z: {data.AngularVelocity.Z}");
-        Log.Debug("Dev_Data_Gyroscope", $"Round Gyroscope: X: {gyrX }, Y: {gyrY }, Z: {gyrZ}");
+        Log.Debug("Dev_Data_Gyr_Data", $"Reading Gyroscope: X: {data.AngularVelocity.X }, Y: {data.AngularVelocity.Y }, Z: {data.AngularVelocity.Z}");
+        Log.Debug("Dev_Data_Gyr_Data", $"Round Gyroscope: X: {gyrX }, Y: {gyrY }, Z: {gyrZ}");
 
         isLaunchedG = true;
       }
@@ -91,17 +92,23 @@ namespace AppTP.Models
     private void CheckMoving()
     {
       var deltas = deltagyrY + deltagyrX + deltagyrZ;
-      if (deltas > limitBreakMove || deltas < -limitBreakMove)
+      if (isHoldG)
       {
-        isHoldG = true;
+        if (Math.Abs(deltas) < limitBreakStand)
+        {
+          isHoldG = false;
+        }
       }
       else
       {
-        isHoldG = false;
+        if (Math.Abs(deltas) > limitBreakMove)
+        {
+          isHoldG = true;
+        }
       }
 
-      Log.Debug("Dev_Move_Gyroscope", $"isHoldG = {isHoldG}");
-      Log.Debug("Dev_Move_Gyroscope", $"Deltas = {deltas}");
+      Log.Debug("Dev_Data_Gyr_Move", $"isHoldG = {isHoldG}");
+      Log.Debug("Dev_Data_Gyr_Move", $"Deltas G = {deltas}");
     }
  
     public static void ToggleGyroscope()

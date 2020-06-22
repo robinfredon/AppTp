@@ -10,7 +10,6 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using Java.Lang;
 using Xamarin.Essentials;
 
 namespace AppTP.Models
@@ -21,7 +20,7 @@ namespace AppTP.Models
     static SensorSpeed speed = SensorSpeed.UI;
     public static decimal accX = 0.0m;
     public static decimal accY = 0.0m;
-    public static decimal accZ = 0.0m;
+    public static decimal accZ = 1.0m;
     public static decimal oldaccX;
     public static decimal oldaccY;
     public static decimal oldaccZ;
@@ -33,7 +32,7 @@ namespace AppTP.Models
     public static bool isHoldA = false;
     private const int nbrDeciDebug = 4;
     private const int nbrDeci = 2;
-    private const int limitBreakMove = 30;
+    private const int limitBreakMove = 50;
 
     public AccelerometerReader()
     {
@@ -60,8 +59,8 @@ namespace AppTP.Models
         CheckMoving();
 
         // Log
-        Log.Debug("Dev_Data_Accelerometer", $"Reading Accelerometer: X: {data.Acceleration.X }, Y: {data.Acceleration.Y }, Z: {data.Acceleration.Z}");
-        Log.Debug("Dev_Data_Accelerometer", $"Round Accelerometer: X: {accX }, Y: {accY }, Z: {accZ}");
+        Log.Debug("Dev_Data_Acc_Coord", $"Reading Accelerometer: X: {data.Acceleration.X }, Y: {data.Acceleration.Y }, Z: {data.Acceleration.Z}");
+        Log.Debug("Dev_Data_Acc_Coord", $"Round Accelerometer: X: {accX }, Y: {accY }, Z: {accZ}");
 
         isLaunchedA = true;
       }
@@ -85,17 +84,23 @@ namespace AppTP.Models
     private void CheckMoving()
     {
       var deltas = deltaaccY + deltaaccX + deltaaccZ;
-      if (deltas > limitBreakMove || deltas < -limitBreakMove)
+      if (isHoldA)
       {
-        isHoldA = true;
+        if(Math.Abs(accZ) > 0.95m && Math.Abs(accX) < 0.05m && Math.Abs(accY) < 0.05m)
+        {
+          isHoldA = false;
+        }
       }
       else
       {
-        isHoldA = false;
+        if ( Math.Abs(deltas) > limitBreakMove )
+        {
+          isHoldA = true;
+        }
       }
 
-      Log.Debug("Dev_Move_Accelerometer", $"isHoldA = {isHoldA}");
-      Log.Debug("Dev_Move_Accelerometer", $"Deltas = {deltas}");
+      Log.Debug("Dev_Data_Acc_Move", $"isHoldA = {isHoldA}");
+      Log.Debug("Dev_Data_Acc_Move", $"Deltas A = {deltas}");
     }
 
     public static void ToggleAccelerometer()
