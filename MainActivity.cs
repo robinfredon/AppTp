@@ -15,9 +15,13 @@ using Java.Util.Zip;
 using Android.Media;
 using Android.Graphics.Drawables;
 using Android.Graphics;
+using Android.Hardware.Camera2;
+using Xamarin.Essentials;
+using System.Timers;
 
 namespace AppTP
 {
+
   [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
   public class MainActivity : AppCompatActivity
   {
@@ -38,8 +42,7 @@ namespace AppTP
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private Boolean isStarted = false;
     private Boolean isMuted = false;
-    private int nbChoc;
-    private int nbRoulis;
+    private Boolean isFirstSalva = true;
 
     protected override void OnCreate(Bundle savedInstanceState)
     {
@@ -130,8 +133,15 @@ namespace AppTP
     // Init after a Voice change
     private void initVoice()
     {
-      nbChoc = 0;
-      nbRoulis = 0;
+      AccelerometerReader.isChocUpdated = false;
+      AccelerometerReader.isChock = false;
+      AccelerometerReader.nbChock = 0;
+      AccelerometerReader.nbTickLin = 0;
+      GyroscopeReader.isRollG = false;
+      GyroscopeReader.nbRowRoll = 0;
+      GyroscopeReader.isFirstRoll = false;
+      GyroscopeReader.isRollUpdated = false;
+      isFirstSalva = true;
     }
 
 
@@ -185,7 +195,7 @@ namespace AppTP
     {
       System.Timers.Timer Timer1 = new System.Timers.Timer();
       Timer1.Start();
-      Timer1.Interval = 500;
+      Timer1.Interval = AccelerometerReader.timeIntervalMs;
       Timer1.Enabled = true;
       Timer1.AutoReset = true;
       Timer1.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
@@ -208,21 +218,8 @@ namespace AppTP
           gyrViewZ.Text = "G Z: " + GyroscopeReader.accZ.ToString();*/
           //GyroscopeReader.ToggleGyroscope();
 
-        });
-      };
-
-      System.Timers.Timer Timer2 = new System.Timers.Timer();
-      Timer2.Start();
-      Timer2.Interval = 1000;
-      Timer2.Enabled = true;
-      Timer2.AutoReset = true;
-      Timer2.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
-      {
-        RunOnUiThread(() =>
-        {
-          Log.Debug("Dev_App", "Timer2 - RunOnUiThread()");
-
           studyMove();
+          //studyMove();
         });
       };
     }
@@ -237,28 +234,113 @@ namespace AppTP
       }
       else if (isStarted)
       {
-        //Scénario 10
-        if (!AccelerometerReader.isHoldA && !GyroscopeReader.isHoldG)
+        if (AccelerometerReader.isChock && AccelerometerReader.isChocUpdated) // Scénario Choc 5 & 6 & 7
+        {
+          AccelerometerReader.nbTickLin = 0;
+          switch (AccelerometerReader.nbChock)
+          {
+            case 1:
+              startScenC(5); // Scénario 5
+              break;
+            case 2:
+              startScenC(6); // Scénario 6
+              break;
+            case 3:
+              startScenC(7); // Scénario 7
+              AccelerometerReader.nbChock = 0;
+              break;
+          }
+          AccelerometerReader.isChocUpdated = false;
+        }
+        else if (GyroscopeReader.isRollG && GyroscopeReader.isRollUpdated) // Scénario Roll 2 & 3 & 4
+        {
+          AccelerometerReader.nbTickLin = 0;
+          if (GyroscopeReader.nbRowRoll == 1)
+          {
+            if (GyroscopeReader.isFirstRoll)
+            {
+              // Scénario 2
+              startScenR(2);
+            }
+            else
+            {
+              // Scénario 4
+              startScenR(4);
+            }
+          }
+          else if (GyroscopeReader.nbRowRoll >= 5000 / (AccelerometerReader.timeIntervalMs * 2) && GyroscopeReader.nbRowRoll % 5 == 0)
+          {
+            // Scénario 3
+            startScenR(3);
+          }
+          GyroscopeReader.isRollUpdated = false;
+        }
+        else if ((!AccelerometerReader.isChock || !GyroscopeReader.isRollG) && AccelerometerReader.nbTickLin >= 5000 / (AccelerometerReader.timeIntervalMs)) // Scénario 8 & 9
+        {
+          if (isFirstSalva)
+          {
+            startScenS(8);// Scénario 8
+            isFirstSalva = false;
+          }
+          else if (AccelerometerReader.nbTickLin % (5000 / (AccelerometerReader.timeIntervalMs)) == 0)
+          {
+            startScenS(9); // Scénario 9
+          }
+          AccelerometerReader.nbTickLin++;
+        }
+        else if (!AccelerometerReader.isHoldA && !GyroscopeReader.isHoldG) // Scénario 10
         {
           startScen10();
         }
+        else
+        {
+          AccelerometerReader.nbTickLin++;
+        }
       }
+      Log.Debug("Dev_Data_Move", $"nb TickLin = {AccelerometerReader.nbTickLin}");
     }
 
-    // Generic Play scen
-    /*private void startScen(int i)
+    // Start Roll Scen 2&3&4
+    private void startScenR(int i)
     {
       while (mediaPlayer.IsPlaying)
       {
         //null
       }
-      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[i]);
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[i - 1]);
       checkMuted();
       mediaPlayer.Start();
-      isStarted = true;
 
-      Log.Debug("Dev_Voice", "Play Start Voice");
-    }*/
+      Log.Debug("Dev_Voice", $"Play Roll Sound {i}");
+    }
+
+    // Start Choc Scen 5&6&7
+    private void startScenC(int i)
+    {
+      while (mediaPlayer.IsPlaying)
+      {
+        //null
+      }
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[i - 1]);
+      checkMuted();
+      mediaPlayer.Start();
+
+      Log.Debug("Dev_Voice", $"Play Choc Sound {i}");
+    }
+
+    // Start Salvatation Scen 8&9
+    private void startScenS(int i)
+    {
+      while (mediaPlayer.IsPlaying)
+      {
+        //null
+      }
+      mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[i - 1]);
+      checkMuted();
+      mediaPlayer.Start();
+
+      Log.Debug("Dev_Voice", $"Play Salvation Sound {i}");
+    }
 
     // Play Scenario 1
     private void startScen1()
@@ -270,11 +352,17 @@ namespace AppTP
       mediaPlayer = MediaPlayer.Create(this, listCurrentVoice[0]);
       checkMuted();
       mediaPlayer.Start();
+      initVoice();
+      while (mediaPlayer.IsPlaying)
+      {
+        //null
+      }
       isStarted = true;
       AccelerometerReader.isStartedA = true;
       GyroscopeReader.isStartedG = true;
+      initVoice();
 
-      Log.Debug("Dev_Voice", "Play Start Voice");
+      Log.Debug("Dev_Voice", "Play Start Sound");
     }
 
     // Play Scenario 10
@@ -291,7 +379,7 @@ namespace AppTP
       AccelerometerReader.isStartedA = false;
       GyroscopeReader.isStartedG = false;
 
-      Log.Debug("Dev_Voice", "Play End Voice");
+      Log.Debug("Dev_Voice", "Play End Sound");
     }
 
     // Reset Volume

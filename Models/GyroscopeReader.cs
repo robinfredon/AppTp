@@ -7,6 +7,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.V4.Content.Res;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
@@ -33,13 +34,20 @@ namespace AppTP.Models
     // BOOL
     public static bool isStartedG = false;
     public static bool isHoldG = false;
+    public static bool isRollG = false;
     public static bool isLaunchedG = false;
+    public static bool isFirstRoll = true;
+    public static bool isRollUpdated = false;
 
     // CONST
     private const int nbrDeciDebug = 4;
     private const int nbrDeci = 2;
-    private const int limitBreakMove = 100;
+    private const int limitBreakMove = 40;
     private const int limitBreakStand = 2;
+    private const int limitBreakRoll = 200;
+
+    // VAR
+    public static int nbRowRoll = 0;
 
     public GyroscopeReader()
     {
@@ -91,6 +99,7 @@ namespace AppTP.Models
     // Check if movement is detected
     private void CheckMoving()
     {
+      // Start & end management
       var deltas = deltagyrY + deltagyrX + deltagyrZ;
       if (isHoldG)
       {
@@ -107,7 +116,34 @@ namespace AppTP.Models
         }
       }
 
+      // Roll management
+      if (isRollG)
+      {
+        if (Math.Abs(deltas) > limitBreakRoll)
+        {
+          isRollG = true;
+          nbRowRoll++;
+        }
+        else
+        {
+          isRollG = false;
+          nbRowRoll = 0;
+        }
+      }
+      else
+      {
+        if (Math.Abs(deltas) > limitBreakRoll)
+        {
+          isRollG = true;
+          nbRowRoll = 1;
+          isFirstRoll = !isFirstRoll;
+        }
+      }
+      isRollUpdated = true;
+
       Log.Debug("Dev_Data_Gyr_Move", $"isHoldG = {isHoldG}");
+      Log.Debug("Dev_Data_Gyr_Move", $"isRoll G = {isRollG}");
+      Log.Debug("Dev_Data_Gyr_Move", $"NbRowRoll = {nbRowRoll}");
       Log.Debug("Dev_Data_Gyr_Move", $"Deltas G = {deltas}");
     }
  
